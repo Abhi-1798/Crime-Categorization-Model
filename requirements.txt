@@ -5,3 +5,4 @@ scikit-learn==1.5.0
 streamlit-authenticator==0.2.3
 xgboost
 imbalanced-learn
+joblib
