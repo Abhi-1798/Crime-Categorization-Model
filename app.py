@@ -4,7 +4,7 @@ import pickle
 
 # Load model and preprocessors
 
-with open("CrimeData.joblib", "rb") as f:
+with open("CrimeData.pkl", "rb") as f:
     bundle = pickle.load(f)
     return bundle
 
