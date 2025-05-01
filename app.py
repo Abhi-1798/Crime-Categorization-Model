@@ -6,7 +6,7 @@ import pickle
 
 with open("CrimeData.joblib", "rb") as f:
     bundle = pickle.load(f)
-return bundle
+    return bundle
 
 model = bundle["model1"]
 label_encoder = bundle["encoder_y"]
