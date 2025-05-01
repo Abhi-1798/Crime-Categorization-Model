@@ -3,14 +3,12 @@ import pandas as pd
 import pickle
 
 # Load model and preprocessors
-@st.cache_resource
-def load_model_bundle():
-    with open("Crimedata.pkl", "rb") as f:
-        bundle = pickle.load(f)
-    return bundle
 
-bundle = load_model_bundle()
-model = bundle["model"]
+with open("CrimeData.joblib", "rb") as f:
+    bundle = pickle.load(f)
+return bundle
+
+model = bundle["model1"]
 label_encoder = bundle["encoder_y"]
 ohe = bundle["encoder_x"]
 selector = bundle["selectkbest"]
