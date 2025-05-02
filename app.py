@@ -72,20 +72,30 @@ if st.button("Predict Crime Category"):
                 'Weapon_Description': weapon_desc
             }
 
-            numeric_data = {
-                'Part 1 or 2': part,
-                'Time_occurred': time_occurred,
-                'Victim_age': victim_age
+                        numeric_data = {
+                'Part_1_2': part,
+                'Time_Occurred': time_occurred,
+                'Victim_Age': victim_age
             }
     # Encode features
-    encoded_input = x_encoder.transform(categorical_data)
-    
+                        cat_df = pd.DataFrame([categorical_data])
+                        num_df = pd.DataFrame([numeric_data])
+
+                        encoded_cat = encoder.transform(cat_df)
+                        encoded_cat_df = pd.DataFrame(
+                                encoded_cat.toarray(),
+                        columns=encoder.get_feature_names_out()
+                                                        )
+                        final_input = pd.concat([encoded_cat_df, num_df], axis=1)
     # Feature selection
-    selected_features = selector.transform(encoded_input)
+                        selected_features = selector.transform(final_input)
     
     # Make prediction
-    prediction = model.predict(selected_features)
-    prediction_label = y_encoder.inverse_transform(prediction)
+                        prediction = model.predict(selected_features)
+                        prediction_label = y_encoder.inverse_transform(prediction)
 
-    st.subheader("Prediction Result")
-    st.write(f"**Predicted Crime Category:** {prediction_label[0]}")
+                        st.subheader("Prediction Result")
+                        st.write(f"**Predicted Crime Category:** {prediction_label[0]}")
+
+                except Exception as e:
+                        st.error(f"❌ Error: {e}")
