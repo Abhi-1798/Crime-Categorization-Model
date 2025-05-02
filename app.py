@@ -1,156 +1,91 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
-
-import numpy as np
+import streamlit as st
 import pandas as pd
-
-
-from sklearn.model_selection import train_test_split
-
-from sklearn.metrics import accuracy_score, classification_report
-
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-from sklearn.feature_selection import SelectKBest, f_classif
-
-from sklearn.tree import DecisionTreeClassifier
-from xgboost import XGBClassifier
-
-
-# In[3]:
-
-
-X=pd.read_csv(r"E:\AnalytixLAB Internship\Oorja Crime Project\X.csv")
-X
-
-
-# In[4]:
-
-
-X.info()
-
-
-# In[5]:
-
-
-y=pd.read_csv(r"E:\AnalytixLAB Internship\Oorja Crime Project\target.csv")
-y
-
-
-# In[7]:
-
-
-label_encoder= LabelEncoder()
-y_enc=label_encoder.fit_transform(y)
-y_enc
-
-
-# In[8]:
-
-
-X_cat= X.select_dtypes('object')
-X_num= X.select_dtypes(['float64', 'int64'])
-
-
-# In[9]:
-
-
-X_cat.nunique()
-
-
-# In[10]:
-
-
-ohe= OneHotEncoder(drop='first', sparse_output=False)
-ohen=ohe.fit_transform(X_cat)
-ohe.get_feature_names_out()
-
-
-# In[11]:
-
-
-X_cat=pd.DataFrame(ohen,columns=ohe.get_feature_names_out())
-X_cat
-
-
-# In[13]:
-
-
-X_new=pd.concat([X_num,X_cat],axis=1)
-X_new.head()
-
-
-# In[24]:
-
-
-selector = SelectKBest(score_func=f_classif, k=12)
-X_selected = selector.fit_transform(X_new, y_enc)
-X_selected = pd.DataFrame(X_selected, columns=X_new.columns[selector.get_support()])
-X_selected.head()
-
-
-# In[25]:
-
-
-from imblearn.over_sampling import SMOTE
-smote = SMOTE(random_state=42)
-X_res, y_res = smote.fit_resample(X_selected, y_enc)
-
-
-# In[26]:
-
-
-X_res.shape
-
-
-# In[27]:
-
-
-#Train-test split
-X_train, X_val, y_train, y_val=train_test_split(X_res, y_res, test_size=0.3, random_state=37)
-
-
-# In[28]:
-
-
-model1 = XGBClassifier(n_estimators=100, max_depth=10)
-model1= model1.fit(X_train,y_train)
-y_enc_pred = model1.predict(X_val)
-y_enc_pred
-
-
-# In[29]:
-
-
-y_predictlabels= label_encoder.inverse_transform(y_enc_pred)
-print(y_predictlabels)
-
-
-# In[30]:
-
-
-accuracy_score(y_val,y_enc_pred)
-
-
-# In[31]:
-
-
-print(classification_report(y_val,y_enc_pred))
-
-
-# In[33]:
-
-
+import numpy as np
 import joblib
 
-joblib.dump({'model': model1, 'encoder_X': ohe, 'encoder_Y': label_encoder, 'selector': selector}, 
-            'E:\\AnalytixLAB Internship\\Oorja Crime Project\\model_bundle.pkl')
+# Load saved model and preprocessing objects
+with open("model_bundle.pkl", "rb") as f:
+        bundle = pickle.load(f)
+        model = bundle["model"]
+        y_encoder = bundle["encoder_Y"]
+        x_encoder = bundle["encoder_X"]
+        selected_features = bundle["selector"]
+            
 
+# Streamlit UI
+st.title("Crime Category Prediction App")
+st.markdown("Predict crime categories based on input details.")
 
-# In[ ]:
+# Input fields
+area_name = st.selectbox("Area Name", ['N Hollywood', 'Newton', 'Mission', '77th Street', 'Northeast',
+       'Hollenbeck', 'Pacific', 'Van Nuys', 'Devonshire', 'Wilshire',
+       'Hollywood', 'Harbor', 'Topanga', 'Central', 'West Valley',
+       'Olympic', 'Foothill', 'West LA', 'Southeast', 'Southwest',
+       'Rampart'])
+part = st.number_input("Part_1_2", min_value=1, max_value=2)
+status = st.selectbox("Status", ['IC', 'AO', 'AA', 'JA', 'JO'])
+time_occurred = st.number_input("Time Occurred (0000 to 2359)", min_value=0, max_value=2359)
+victim_age = st.number_input("Victim Age", min_value=0, max_value=100)
+victim_descent = st.selectbox("Victim Descent", ['W', 'H', 'B', 'X', 'O', 'A', 'K', 'C', 'F', 'I', 'J', 'Z', 'V',
+       'P', 'D', 'U', 'G'])
+victim_sex = st.selectbox("Victim Sex", ["M", "F", "X", "H"])
+weapon_desc = st.selectbox("Weapon Description", ['UNKNOWN WEAPON/OTHER WEAPON',
+       'STRONG-ARM (HANDS, FIST, FEET OR BODILY FORCE)', 'VERBAL THREAT',
+       'OTHER KNIFE', 'HAND GUN', 'VEHICLE', 'FIRE', 'PIPE/METAL PIPE',
+       'KNIFE WITH BLADE 6INCHES OR LESS', 'BLUNT INSTRUMENT', 'CLUB/BAT',
+       'SEMI-AUTOMATIC PISTOL', 'ROCK/THROWN OBJECT', 'MACHETE',
+       'UNKNOWN FIREARM', 'AIR PISTOL/REVOLVER/RIFLE/BB GUN', 'TOY GUN',
+       'FIXED OBJECT', 'UNKNOWN TYPE CUTTING INSTRUMENT', 'FOLDING KNIFE',
+       'HAMMER', 'PHYSICAL PRESENCE', 'MACE/PEPPER SPRAY',
+       'OTHER CUTTING INSTRUMENT', 'BOARD', 'BOTTLE', 'KITCHEN KNIFE',
+       'RIFLE', 'KNIFE WITH BLADE OVER 6 INCHES IN LENGTH', 'SCREWDRIVER',
+       'STICK', 'SIMULATED GUN', 'BELT FLAILING INSTRUMENT/CHAIN',
+       'CONCRETE BLOCK/BRICK', 'AXE', 'ICE PICK', 'REVOLVER',
+       'OTHER FIREARM', 'SCISSORS', 'STARTER PISTOL/REVOLVER', 'GLASS',
+       'SHOTGUN', 'BRASS KNUCKLES', 'SWITCH BLADE', 'TIRE IRON',
+       'SAWED OFF RIFLE/SHOTGUN', 'CAUSTIC CHEMICAL/POISON',
+       'SCALDING LIQUID', 'DEMAND NOTE', 'BOMB THREAT', 'BOWIE KNIFE',
+       'STUN GUN', 'MARTIAL ARTS WEAPONS', 'RAZOR BLADE',
+       'HECKLER & KOCH 93 SEMIAUTOMATIC ASSAULT RIFLE',
+       'ASSAULT WEAPON/UZI/AK47/ETC', 'CLEAVER'])
 
+# Prepare input
+input_df = pd.DataFrame({
+    'Area_Name': [area_name],
+    'Part_1_2': [part],
+    'Status': [status],
+    'Time_Occurred': [time_occurred],
+    'Victim_Age': [victim_age],
+    'Victim_Descent': [victim_descent],
+    'Victim_Sex': [victim_sex],
+    'Weapon_Description': [weapon_desc]
+})
 
+# Predict button
+if st.button("Predict Crime Category"):
+            try:
+                        categorical_data = {
+                'Area_Name': area_name,
+                'Status': status,
+                'Victim_Descent': victim_descent,
+                'Victim_Sex': victim_sex,
+                'Weapon_Description': weapon_desc
+            }
 
+            numeric_data = {
+                'Part 1 or 2': part,
+                'Time_occurred': time_occurred,
+                'Victim_age': victim_age
+            }
+    # Encode features
+    encoded_input = x_encoder.transform(categorical_data)
+    
+    # Feature selection
+    selected_features = selector.transform(encoded_input)
+    
+    # Make prediction
+    prediction = model.predict(selected_features)
+    prediction_label = y_encoder.inverse_transform(prediction)
 
+    st.subheader("Prediction Result")
+    st.write(f"**Predicted Crime Category:** {prediction_label[0]}")
