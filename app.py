@@ -1,35 +1,32 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import joblib
+import pickle  
 
-# Load saved model and preprocessing objects
-with open("model_bundle.pkl", "rb") as f:
-        bundle = pickle.load(f)
-        model = bundle["model"]
-        y_encoder = bundle["encoder_Y"]
-        x_encoder = bundle["encoder_X"]
-        selected_features = bundle["selector"]
-            
+# Load model and preprocessing objects
+bundle = joblib.load("CrimeData.joblib")
+model            = bundle["model"]
+label_encoder    = bundle["encoder_y"]
+ohe              = bundle["encoder_x"]
+selector         = bundle["selectkbest"]
 
 # Streamlit UI
-st.title("Crime Category Prediction App")
+st.title("🚓 Crime Category Prediction App")
 st.markdown("Predict crime categories based on input details.")
 
 # Input fields
-area_name = st.selectbox("Area Name", ['N Hollywood', 'Newton', 'Mission', '77th Street', 'Northeast',
+area_name       = st.selectbox("Area_Name", ['N Hollywood', 'Newton', 'Mission', '77th Street', 'Northeast',
        'Hollenbeck', 'Pacific', 'Van Nuys', 'Devonshire', 'Wilshire',
        'Hollywood', 'Harbor', 'Topanga', 'Central', 'West Valley',
        'Olympic', 'Foothill', 'West LA', 'Southeast', 'Southwest',
-       'Rampart'])
-part = st.number_input("Part_1_2", min_value=1, max_value=2)
-status = st.selectbox("Status", ['IC', 'AO', 'AA', 'JA', 'JO'])
-time_occurred = st.number_input("Time Occurred (0000 to 2359)", min_value=0, max_value=2359)
-victim_age = st.number_input("Victim Age", min_value=0, max_value=100)
-victim_descent = st.selectbox("Victim Descent", ['W', 'H', 'B', 'X', 'O', 'A', 'K', 'C', 'F', 'I', 'J', 'Z', 'V',
-       'P', 'D', 'U', 'G'])
-victim_sex = st.selectbox("Victim Sex", ["M", "F", "X", "H"])
-weapon_desc = st.selectbox("Weapon Description", ['UNKNOWN WEAPON/OTHER WEAPON',
+       'Rampart'])          
+part            = st.number_input("Part_1_2", min_value=1, max_value=2)
+status          = st.selectbox("Status", ['IC', 'AO', 'AA', 'JA', 'JO'])
+time_occurred   = st.number_input("Time_Occurred", min_value=0, max_value=2359)
+victim_age      = st.number_input("Victim_Age", min_value=0, max_value=100)
+victim_descent  = st.selectbox("Victim_Descent", ['W', 'H', 'B', 'X', 'O', 'A', 'K', 'C', 'F', 'I', 'J', 'Z', 'V',
+       'P', 'D', 'U', 'G'])     
+victim_sex      = st.selectbox("Victim_Sex", ["M", "F", "X", "H"])
+weapon_desc     = st.selectbox("Weapon_Description", ['UNKNOWN WEAPON/OTHER WEAPON',
        'STRONG-ARM (HANDS, FIST, FEET OR BODILY FORCE)', 'VERBAL THREAT',
        'OTHER KNIFE', 'HAND GUN', 'VEHICLE', 'FIRE', 'PIPE/METAL PIPE',
        'KNIFE WITH BLADE 6INCHES OR LESS', 'BLUNT INSTRUMENT', 'CLUB/BAT',
@@ -47,55 +44,46 @@ weapon_desc = st.selectbox("Weapon Description", ['UNKNOWN WEAPON/OTHER WEAPON',
        'SCALDING LIQUID', 'DEMAND NOTE', 'BOMB THREAT', 'BOWIE KNIFE',
        'STUN GUN', 'MARTIAL ARTS WEAPONS', 'RAZOR BLADE',
        'HECKLER & KOCH 93 SEMIAUTOMATIC ASSAULT RIFLE',
-       'ASSAULT WEAPON/UZI/AK47/ETC', 'CLEAVER'])
+       'ASSAULT WEAPON/UZI/AK47/ETC', 'CLEAVER']) 
 
-# Prepare input
+# Prepare input DataFrame
 input_df = pd.DataFrame({
-    'Area_Name': [area_name],
-    'Part_1_2': [part],
-    'Status': [status],
-    'Time_Occurred': [time_occurred],
-    'Victim_Age': [victim_age],
-    'Victim_Descent': [victim_descent],
-    'Victim_Sex': [victim_sex],
-    'Weapon_Description': [weapon_desc]
+    'Area_Name':           [area_name],
+    'Part_1_2':            [part],
+    'Status':              [status],
+    'Time_Occurred':       [time_occurred],
+    'Victim_Age':          [victim_age],
+    'Victim_Descent':      [victim_descent],
+    'Victim_Sex':          [victim_sex],
+    'Weapon_Description':  [weapon_desc]
 })
 
 # Predict button
-if st.button("Predict Crime Category"):
-            try:
-                        categorical_data = {
-                'Area_Name': area_name,
-                'Status': status,
-                'Victim_Descent': victim_descent,
-                'Victim_Sex': victim_sex,
-                'Weapon_Description': weapon_desc
-            }
+if st.button("🔍 Predict Crime Category"):
+    try:
+        # Split categorical and numerical
+        cat_cols = ['Area_Name', 'Status', 'Victim_Descent', 'Victim_Sex', 'Weapon_Description']
+        num_cols = ['Part_1_2', 'Time_Occurred', 'Victim_Age']
 
-                        numeric_data = {
-                'Part_1_2': part,
-                'Time_Occurred': time_occurred,
-                'Victim_Age': victim_age
-            }
-    # Encode features
-                        cat_df = pd.DataFrame([categorical_data])
-                        num_df = pd.DataFrame([numeric_data])
+        # Encode categorical features
+        encoded_cat = ohe.transform(cat_cols)
+        encoded_cat_df = pd.DataFrame(
+            encoded_cat.toarray(),
+            columns=ohe.get_feature_names_out(cat_cols)
+        )
 
-                        encoded_cat = encoder.transform(cat_df)
-                        encoded_cat_df = pd.DataFrame(
-                                encoded_cat.toarray(),
-                        columns=encoder.get_feature_names_out()
-                                                        )
-                        final_input = pd.concat([encoded_cat_df, num_df], axis=1)
-    # Feature selection
-                        selected_features = selector.transform(final_input)
-    
-    # Make prediction
-                        prediction = model.predict(selected_features)
-                        prediction_label = y_encoder.inverse_transform(prediction)
+        # Combine with numerical
+        final_input = pd.concat([encoded_cat_df, num_cols], axis=1)
 
-                        st.subheader("Prediction Result")
-                        st.write(f"**Predicted Crime Category:** {prediction_label[0]}")
+        # Feature selection
+        selected_input = selector.transform(final_input)
 
-                except Exception as e:
-                        st.error(f"❌ Error: {e}")
+        # Predict and decode label
+        y_pred = model.predict(selected_input)
+        prediction = label_encoder.inverse_transform(y_pred)
+
+        st.subheader("Prediction Result")
+        st.write(f"**Predicted Crime Category:** {prediction[0]}")
+
+    except Exception as e:
+        st.error(f"❌ Error: {e}")
