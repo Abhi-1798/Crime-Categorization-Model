@@ -15,19 +15,19 @@ st.title("🚓 Crime Category Prediction App")
 st.markdown("Predict crime categories based on input details.")
 
 # Input fields
-area_name       = st.selectbox("Area_Name", ['N Hollywood', 'Newton', 'Mission', '77th Street', 'Northeast',
+area_name = st.selectbox("Area_Name", ['N Hollywood', 'Newton', 'Mission', '77th Street', 'Northeast',
        'Hollenbeck', 'Pacific', 'Van Nuys', 'Devonshire', 'Wilshire',
        'Hollywood', 'Harbor', 'Topanga', 'Central', 'West Valley',
        'Olympic', 'Foothill', 'West LA', 'Southeast', 'Southwest',
        'Rampart'])          
-part            = st.number_input("Part_1_2", min_value=1, max_value=2)
-status          = st.selectbox("Status", ['IC', 'AO', 'AA', 'JA', 'JO'])
-time_occurred   = st.number_input("Time_Occurred", min_value=0, max_value=2359)
-victim_age      = st.number_input("Victim_Age", min_value=0, max_value=100)
-victim_descent  = st.selectbox("Victim_Descent", ['W', 'H', 'B', 'X', 'O', 'A', 'K', 'C', 'F', 'I', 'J', 'Z', 'V',
+part = st.number_input("Part_1_2", min_value=1, max_value=2)
+status = st.selectbox("Status", ['IC', 'AO', 'AA', 'JA', 'JO'])
+time_occurred = st.number_input("Time_Occurred", min_value=0, max_value=2359)
+victim_age = st.number_input("Victim_Age", min_value=0, max_value=100)
+victim_descent = st.selectbox("Victim_Descent", ['W', 'H', 'B', 'X', 'O', 'A', 'K', 'C', 'F', 'I', 'J', 'Z', 'V',
        'P', 'D', 'U', 'G'])     
-victim_sex      = st.selectbox("Victim_Sex", ["M", "F", "X", "H"])
-weapon_desc     = st.selectbox("Weapon_Description", ['UNKNOWN WEAPON/OTHER WEAPON',
+victim_sex = st.selectbox("Victim_Sex", ["M", "F", "X", "H"])
+weapon_desc = st.selectbox("Weapon_Description", ['UNKNOWN WEAPON/OTHER WEAPON',
        'STRONG-ARM (HANDS, FIST, FEET OR BODILY FORCE)', 'VERBAL THREAT',
        'OTHER KNIFE', 'HAND GUN', 'VEHICLE', 'FIRE', 'PIPE/METAL PIPE',
        'KNIFE WITH BLADE 6INCHES OR LESS', 'BLUNT INSTRUMENT', 'CLUB/BAT',
@@ -47,24 +47,16 @@ weapon_desc     = st.selectbox("Weapon_Description", ['UNKNOWN WEAPON/OTHER WEAP
        'HECKLER & KOCH 93 SEMIAUTOMATIC ASSAULT RIFLE',
        'ASSAULT WEAPON/UZI/AK47/ETC', 'CLEAVER']) 
 
-# Prepare input DataFrame
-input_df = pd.DataFrame({
-    'Area_Name':           [area_name],
-    'Part_1_2':            [part],
-    'Status':              [status],
-    'Time_Occurred':       [time_occurred],
-    'Victim_Age':          [victim_age],
-    'Victim_Descent':      [victim_descent],
-    'Victim_Sex':          [victim_sex],
-    'Weapon_Description':  [weapon_desc]
-})
 
 # Predict button
 if st.button("🔍 Predict Crime Category"):
     try:
         # Split categorical and numerical
-        cat_cols = ['Area_Name', 'Status', 'Victim_Descent', 'Victim_Sex', 'Weapon_Description']
-        num_cols = ['Part_1_2', 'Time_Occurred', 'Victim_Age']
+           cat_data = {'Area_Name':area_name, 'Status':status, 'Victim_Descent':victim_descent,
+                       'Victim_Sex':victim_sex, 'Weapon_Description':weapon_desc}
+           num_data = {'Part_1_2':part, 'Time_Occurred':time_occurred, 'Victim_Age':victim_age}
+        cat_cols = pd.DataFrame([cat_data])
+        num_cols = pd.DataFrame([num_data])
 
         # Encode categorical features
         encoded_cat = ohe.transform(cat_cols)
