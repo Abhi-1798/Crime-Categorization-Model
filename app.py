@@ -69,7 +69,7 @@ if st.button("🔍 Predict Crime Category"):
         # Encode categorical features
         encoded_cat = ohe.transform(cat_cols)
         encoded_cat_df = pd.DataFrame(
-            encoded_cat.toarray(),
+            encoded_cat,
             columns=ohe.get_feature_names_out(cat_cols)
         )
 
