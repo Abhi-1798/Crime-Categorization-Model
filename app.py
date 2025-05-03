@@ -3,11 +3,11 @@ import pandas as pd
 import pickle  
 
 # Load model and preprocessing objects
-bundle = joblib.load("CrimeData.joblib")
+bundle = joblib.load("model_bundle.pkl")
 model            = bundle["model"]
-label_encoder    = bundle["encoder_y"]
-ohe              = bundle["encoder_x"]
-selector         = bundle["selectkbest"]
+label_encoder    = bundle["encoder_Y"]
+ohe              = bundle["encoder_X"]
+selector         = bundle["selector"]
 
 # Streamlit UI
 st.title("🚓 Crime Category Prediction App")
