@@ -6,7 +6,7 @@ import pickle
 with open("model_bundle.pkl", "rb") as f:
        bundle = pickle.load(f)
        model = bundle["model"]
-       lable_encoder = bundle["encoder_Y"]
+       label_encoder = bundle["encoder_Y"]
        ohe = bundle["encoder_X"]
        selector = bundle["selector"]
 
