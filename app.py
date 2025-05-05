@@ -27,7 +27,7 @@ victim_age = st.number_input("Victim_Age", min_value=0, max_value=100)
 victim_descent = st.selectbox("Victim_Descent", ['W', 'H', 'B', 'X', 'O', 'A', 'K', 'C', 'F', 'I', 'J', 'Z', 'V',
     'P', 'D', 'U', 'G'])     
 victim_sex = st.selectbox("Victim_Sex", ["M", "F", "X", "H"])
-weapon_desc = st.selectbox("Weapon_Description", ['UNKNOWN WEAPON/OTHER WEAPON',
+weapon_description = st.selectbox("Weapon_Description", ['UNKNOWN WEAPON/OTHER WEAPON',
     'STRONG-ARM (HANDS, FIST, FEET OR BODILY FORCE)', 'VERBAL THREAT',
     'OTHER KNIFE', 'HAND GUN', 'VEHICLE', 'FIRE', 'PIPE/METAL PIPE',
     'KNIFE WITH BLADE 6INCHES OR LESS', 'BLUNT INSTRUMENT', 'CLUB/BAT',
@@ -56,7 +56,7 @@ if st.button("🔍 Predict Crime Category"):
             'Status': status,
             'Victim_Descent': victim_descent,
             'Victim_Sex': victim_sex,
-            'Weapon_Description': weapon_desc
+            'Weapon_Description': weapon_description
         }
         num_data = {
             'Part_1_2': part,
@@ -70,7 +70,7 @@ if st.button("🔍 Predict Crime Category"):
         encoded_cat = ohe.transform(cat_cols)
         encoded_cat_df = pd.DataFrame(
             encoded_cat,
-            columns=ohe.get_feature_names_out(cat_cols)
+            columns=ohe.get_feature_names_out()
         )
 
         # Combine with numerical
