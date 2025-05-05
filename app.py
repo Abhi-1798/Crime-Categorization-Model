@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
-import joblib  
+import pickle  
 
 # Load model and preprocessing objects
 with open("model_bundle.pkl", "rb") as f:
-    bundle = joblib.load(f)
+    bundle = pickle.load(f)
     model = bundle["model"]
-    label_encoder = bundle["encoder_Y"]
+    le = bundle["encoder_Y"]
     ohe = bundle["encoder_X"]
     selector = bundle["selector"]
 
@@ -77,11 +77,11 @@ if st.button("🔍 Predict Crime Category"):
         final_input = pd.concat([num_cols, encoded_cat_df], axis=1)
 
         # Feature selection
-        selected_input = selector.transform(final_input)
+        selected_input = final_input[selector]
 
         # Predict and decode label
         y_pred = model.predict(selected_input)
-        prediction = label_encoder.inverse_transform(y_pred)
+        prediction = le.inverse_transform(y_pred)
 
         st.subheader("Prediction Result")
         st.write(f"**Predicted Crime Category:** {prediction[0]}")
