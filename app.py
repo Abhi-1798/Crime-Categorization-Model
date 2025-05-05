@@ -74,7 +74,7 @@ if st.button("🔍 Predict Crime Category"):
         )
 
         # Combine with numerical
-        final_input = pd.concat([encoded_cat_df, num_cols], axis=1)
+        final_input = pd.concat([num_cols, encoded_cat_df], axis=1)
 
         # Feature selection
         selected_input = selector.transform(final_input)
