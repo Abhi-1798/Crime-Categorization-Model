@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
-import pickle  
+import joblib  
 
 # Load model and preprocessing objects
 with open("model_bundle.pkl", "rb") as f:
-    bundle = pickle.load(f)
+    bundle = joblib.load(f)
     model = bundle["model"]
     le = bundle["encoder_Y"]
     ohe = bundle["encoder_X"]
